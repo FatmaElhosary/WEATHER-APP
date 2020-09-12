@@ -5,7 +5,7 @@ const apiKey = "&appid=b22204427e781e2f5030cab8df8c67ce&units=imperial";
 
 // Create a new date instance dynamically with JS
 let date = new Date();
-let newDate = date.getMonth() + "." + date.getDate() + "." + date.getFullYear();
+let newDate = date.getMonth()+1 + "." + date.getDate() + "." + date.getFullYear();
 //add 1 to date
 //Adds an event listener to an existing HTML button
 const generate = document.getElementById("generate");
@@ -17,7 +17,7 @@ function performAction(params) {
   if(zipCode&&zipCode!=undefined&&zipCode!==""){
   getWeather(baseURL, zipCode, apiKey)
     .then(async(data) => {
-      console.log(data.name);
+      console.log(data.message);
       const feeling = document.getElementById("feelings").value;
      await postData("/addData", { temperature: data.main.temp, date, feeling });
     })
@@ -25,6 +25,7 @@ function performAction(params) {
       updateView();
     });
   }else{
+    removeOldData();
 alert("please ,Enter Zip Code ..")
   }
 }
@@ -71,19 +72,25 @@ const postData = async (url = "", data = {}) => {
 //postData('/add', {answer:42});
 
  const updateView = async () => {
-  const request = await fetch("/all");
+  const request = await fetch("http://localhost:3000/all");
 
   try {
     const allData = await request.json();
     ///////////why not appear in console???!/////////////
    
     /////update UI////////
+    console.log(allData);
+    removeOldData();
     document.getElementById("date").innerHTML = allData.date;
     document.getElementById("temp").innerHTML = allData.temperature;
     document.getElementById("content").innerHTML = allData.feeling;
-    console.log("allllll " + allData);
+   
   } catch (error) {
     console.log("error", error);
   }
 }; 
- 
+function removeOldData(){
+  document.getElementById("date").innerHTML = "";
+  document.getElementById("temp").innerHTML = "";
+  document.getElementById("content").innerHTML = "";
+} 
