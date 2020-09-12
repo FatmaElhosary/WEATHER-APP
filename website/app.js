@@ -1,82 +1,89 @@
 /* Global Variables */
-let baseURL = 'http://api.openweathermap.org/data/2.5/weather?zip=';
-let apiKey = '&appid=b22204427e781e2f5030cab8df8c67ce';
-
+const baseURL = "https://api.openweathermap.org/data/2.5/weather?zip=";
+const apiKey = "&appid=b22204427e781e2f5030cab8df8c67ce&units=imperial";
+//&units=metric
 
 // Create a new date instance dynamically with JS
-let d = new Date();
-let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
+let date = new Date();
+let newDate = date.getMonth() + "." + date.getDate() + "." + date.getFullYear();
+//add 1 to date
+//Adds an event listener to an existing HTML button
+const generate = document.getElementById("generate");
+generate.addEventListener("click", performAction);
 
-//Adds an event listener to an existing HTML button 
-const generate=document.getElementById("generate");
-generate.addEventListener('click',performAction);
-
-
-
-//call back function 
-function performAction(params) {  
-    const zipCode=+document.getElementById('zip').value ;
-    //if(zipCode)
-    getWeather(baseURL,zipCode,apiKey).then((data)=>{
-        console.log(data.name);
-        const feeling=document.getElementById("feelings").value;
-    postData('/addData',{temperature:data.name,d,feeling})
+//call back function
+function performAction(params) {
+  const zipCode = +document.getElementById("zip").value;
+  if(zipCode&&zipCode!=undefined&&zipCode!==""){
+  getWeather(baseURL, zipCode, apiKey)
+    .then(async(data) => {
+      console.log(data.name);
+      const feeling = document.getElementById("feelings").value;
+     await postData("/addData", { temperature: data.main.temp, date, feeling });
     })
-  updateView()
-   
+    .then(() => {
+      updateView();
+    });
+  }else{
+alert("please ,Enter Zip Code ..")
+  }
 }
 //get request using fetch
-const getWeather = async (baseURL, zipCode, key)=>{
+const getWeather = async (baseURL, zipCode, key) => {
+  //fetch data from api
+  const req = await fetch(baseURL + zipCode + key);
+  try {
+    //convert data to json
+    const data = await req.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log("error", error);
 
-    const req = await fetch(baseURL+zipCode+key);
-    try {
-      const data = await req.json();
-      console.log(data)
-       return data;
-    }  catch(error) {
-      console.log("error", error);
-
-      // appropriately handle the error
-    }
+    // appropriately handle the error
   }
+};
 
 ////////////////////////////////////////
- const postData = async ( url = '', data = {})=>{
-    console.log(data);
-      const response = await fetch(url, {
-      method: 'POST', 
-      credentials: 'same-origin',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-     // Body data type must match "Content-Type" header        
-      body: JSON.stringify(data), 
-    });
+//
+const postData = async (url = "", data = {}) => {
+  //code to fetch route  url and write req method, creadentials
+  console.log(data);
+  const response = await fetch(url, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    // Body data type must match "Content-Type" header
+    body: JSON.stringify(data),
+  });
 
-      try {
-        const newData = await response.json();
-        console.log(newData);
-        return newData;
-      }catch(error) {
-      console.log("error", error);
-      }
-  } 
+  try {
+    const newData = await response.json();
+    console.log(newData);
+    return newData;
+  } catch (error) {
+    console.log("error", error);
+  }
+};
 
 //postData('/add', {answer:42});
+
+ const updateView = async () => {
+  const request = await fetch("/all");
+
+  try {
+    const allData = await request.json();
+    ///////////why not appear in console???!/////////////
+   
+    /////update UI////////
+    document.getElementById("date").innerHTML = allData.date;
+    document.getElementById("temp").innerHTML = allData.temperature;
+    document.getElementById("content").innerHTML = allData.feeling;
+    console.log("allllll " + allData);
+  } catch (error) {
+    console.log("error", error);
+  }
+}; 
  
-const updateView=async ()=>{
-
-    const request= await fetch('/all');
-
-    try{
-        const allData = await request.json();
-        console.log("allllll "+ allData);
-        document.getElementById('date').innerHTML = allData.d;
-        document.getElementById('temp').innerHTML = allData.temperature;
-        document.getElementById('content').innerHTML = allData.feeling;
-    
-      }catch(error){
-        console.log("error", error);
-      }
-}
-
