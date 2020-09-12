@@ -20,6 +20,7 @@ app.use(cors());
 // Initialize the main project folder
 app.use(express.static('website'));
 //Routes//////
+//
 app.get('/all',(req,res)=>res.json(projectData));
 
 
@@ -27,9 +28,15 @@ app.get('/all',(req,res)=>res.json(projectData));
 app.post('/addData', addData);
 
 function addData (req,res){
-    projectData=req.body;
-    console.log(projectData);
-    res.json(projectData);
+    if(req.body&&req.body!=''&&req.body!=undefined){
+        projectData=req.body;
+        // console.log(projectData);
+     
+         res.json(projectData);
+    }else{
+        console.log("error in data ");
+    }
+ 
 };
  
 
